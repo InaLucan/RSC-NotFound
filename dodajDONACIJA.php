@@ -1,0 +1,20 @@
+<?php 
+ini_set('display_errors',1); 
+error_reporting(E_ALL); 
+include 'konfiguracija.php';
+$don = $_POST['id_don'];
+$org = $_POST['id_ins'];
+$ins = $con->prepare("insert into DONACIJA (id_don, datum, id_ins) values ($don, :datum, $org);");
+$ins->bindParam(":datum", $_POST['datum']);
+$ins->execute();
+$sql1 = $con->prepare("select ZALIHE.kolicina_zal, DONATOR.id_krv from ZALIHE inner join INSTITUCIJA on INSTITUCIJA.id_ins=ZALIHE.id_ins inner join KRV on KRV.id_krv=ZALIHE.id_krv inner join DONATOR on DONATOR.id_krv=KRV.id_krv  where ZALIHE.id_ins=$org and DONATOR.id_don=$don;");
+$sql1->execute();
+$r1 = $sql1->fetch(PDO::FETCH_OBJ);
+$kzal = $r1->kolicina_zal;
+$zbr1= $kzal + 1;
+$dkrv = $r1->id_krv;
+echo $kzal;
+echo $zbr1;
+$zk = $con->prepare("update ZALIHE set ZALIHE.kolicina_zal=$zbr1 where ZALIHE.id_ins=$org and ZALIHE.id_krv=$dkrv;");
+$zk->execute();
+header("location: home.php?id_don=$don");
